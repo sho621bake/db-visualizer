@@ -3,7 +3,7 @@ import { LEGEND } from './legend.js';
 export function App() {
   return (
     <main className="app">
-      <h1>InnoDB Visualizer</h1>
+      <h1>DB Visualizer</h1>
       <p className="lead">
         MySQL (InnoDB) のクエリ実行を3Dアニメーションで学ぶサイト。3Dシーンは M2
         で実装します。現在は足場のみです。

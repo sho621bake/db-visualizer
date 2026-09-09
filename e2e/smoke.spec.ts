@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 test('プレースホルダ画面に凡例3項目とモバイル注記が表示される', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: 'InnoDB Visualizer', level: 1 })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'DB Visualizer', level: 1 })).toBeVisible();
 
   const legend = page.getByTestId('legend');
   await expect(legend.getByRole('listitem')).toHaveCount(3);

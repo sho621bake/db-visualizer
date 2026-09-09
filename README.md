@@ -1,4 +1,4 @@
-# InnoDB Visualizer
+# DB Visualizer
 
 MySQL (InnoDB) のクエリ実行を3Dアニメーションで学ぶサイト。
 

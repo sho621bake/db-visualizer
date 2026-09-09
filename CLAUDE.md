@@ -1,4 +1,4 @@
-# InnoDB Visualizer
+# DB Visualizer
 
 MySQL (InnoDB) のクエリ実行を3Dアニメーションで学ぶサイト。設計は `docs/DESIGN.md`、計画は `docs/PLAN.md`、実物との差分は `docs/FIDELITY.md` を正とする。
 

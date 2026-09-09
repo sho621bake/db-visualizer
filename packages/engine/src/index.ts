@@ -1,4 +1,4 @@
-export const ENGINE_NAME = 'InnoDB Visualizer Engine';
+export const ENGINE_NAME = 'DB Visualizer Engine';
 
 export { Catalog, type Row, type TableStats, type Value } from './catalog/catalog.js';
 export { PRIMARY, TABLES, type TableDef } from './catalog/schema.js';
