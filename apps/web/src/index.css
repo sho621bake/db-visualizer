@@ -1,43 +1,590 @@
+/*
+ * DESIGN.md §5: 説明が主役なので装飾は最小。
+ * 色は「ディスクI/O=赤系 / バッファプールヒット=緑系 / 棄却=灰」の3系統に固定し、
+ * それ以外は無彩色で通す。legend.ts の値とここの変数は同じものを指す。
+ */
 :root {
   color-scheme: light dark;
   font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
   line-height: 1.6;
+
+  --disk: #d9534f;
+  --hit: #3f9e5a;
+  --rejected: #8a8a8a;
+
+  --ink: #1c1c1c;
+  --ink-muted: #5c5c5c;
+  --surface: #ffffff;
+  --surface-sunken: #f4f4f5;
+  --line: #d8d8dc;
+  --focus: #1c1c1c;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #ececee;
+    --ink-muted: #a2a2a8;
+    --surface: #17171a;
+    --surface-sunken: #202024;
+    --line: #35353c;
+    --focus: #ececee;
+  }
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  color: var(--ink);
+  background: var(--surface);
 }
 
+code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---- 全体レイアウト: 左エディタ / 中央シーン / 右パネル / 下プレイヤー ---- */
+
 .app {
-  max-width: 60rem;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.5rem;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.1rem;
 }
 
 .lead {
-  max-width: 44rem;
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
 }
 
 .legend {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
+  margin: 0 0 0 auto;
   padding: 0;
   list-style: none;
+  font-size: 0.8rem;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
 .legend-swatch {
-  width: 0.9rem;
-  height: 0.9rem;
+  width: 0.75rem;
+  height: 0.75rem;
   border-radius: 2px;
 }
 
-.note {
-  font-size: 0.875rem;
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: minmax(20rem, 24rem) minmax(0, 1fr) minmax(22rem, 28rem);
+  min-height: 0;
+}
+
+.column {
+  padding: 1rem;
+  overflow-y: auto;
+  min-width: 0;
+}
+
+.column--editor {
+  border-right: 1px solid var(--line);
+}
+
+.column--panels {
+  border-left: 1px solid var(--line);
+  background: var(--surface-sunken);
+}
+
+.column h2 {
+  margin: 0 0 0.75rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+
+/* ---- エディタ ---- */
+
+.presets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.preset,
+.run,
+.player-button {
+  font: inherit;
+  color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.preset:hover,
+.run:hover,
+.player-button:not(:disabled):hover {
+  border-color: var(--focus);
+}
+
+.run {
+  margin-top: 0.75rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.sql-editor {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.sql-editor .cm-editor {
+  max-height: 16rem;
+}
+
+.sql-editor .cm-editor.cm-focused {
+  outline: 2px solid var(--focus);
+}
+
+.ignore-indexes {
+  margin: 0.75rem 0 0;
+  font-size: 0.8rem;
+}
+
+.ignore-indexes-note {
+  display: block;
+  color: var(--ink-muted);
+}
+
+.error {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--disk);
+  border-radius: 4px;
+  color: var(--disk);
+  font-size: 0.85rem;
+}
+
+/* ---- シーン ---- */
+
+.scene {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.scene-section h3 {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+.scene-empty {
+  margin: 0;
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.btree-path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.btree-node {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: 0.8rem;
+}
+
+.btree-node:not(:last-child)::after {
+  content: "→";
+  margin-left: 0.35rem;
+  color: var(--ink-muted);
+}
+
+.btree-node[data-level="0"] {
+  border-color: var(--focus);
+}
+
+.btree-level {
+  color: var(--ink-muted);
+}
+
+.lookup {
+  margin: 0.6rem 0 0;
+  font-size: 0.85rem;
+}
+
+.pages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ページタイル: 読み元の3系統だけで塗り分ける */
+.page {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.4rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--rejected);
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.page[data-source="disk"] {
+  border-left-color: var(--disk);
+}
+
+.page[data-source="bufferpool"] {
+  border-left-color: var(--hit);
+}
+
+.page[data-focused="true"] {
+  outline: 2px solid var(--focus);
+}
+
+.page-reads {
+  color: var(--ink-muted);
+}
+
+/* 結果が数百行になっても集計が画面外に出ないよう、グリッド側だけを送る */
+.result-grid-wrap {
+  max-height: 20rem;
+  overflow: auto;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.result-grid {
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.result-grid thead th {
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+
+.result-grid th,
+.result-grid td {
+  border: 1px solid var(--line);
+  padding: 0.2rem 0.5rem;
+  text-align: left;
+}
+
+.result-grid th {
+  color: var(--ink-muted);
+  font-weight: 600;
+}
+
+.counters {
+  position: sticky;
+  bottom: 0;
+  background: var(--surface);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  margin: 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.8rem;
+}
+
+.counter dt {
+  color: var(--ink-muted);
+}
+
+.counter dd {
+  margin: 0;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.counter--disk dd {
+  color: var(--disk);
+}
+
+.counter--hit dd {
+  color: var(--hit);
+}
+
+.counter--rejected dd {
+  color: var(--rejected);
+}
+
+/* ---- 右カラムのパネル ---- */
+
+.explain-panel,
+.candidates-panel,
+.event-detail {
+  margin-bottom: 1.25rem;
+  font-size: 0.82rem;
+}
+
+.explain-panel__tree-heading,
+.candidates-panel__heading,
+.event-detail h3 {
+  margin: 0.9rem 0 0.4rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+}
+
+/* 列数が多いので、はみ出したぶんはパネル内で横スクロールさせる */
+.explain-panel {
+  overflow-x: auto;
+}
+
+.explain-panel table {
+  width: max-content;
+  min-width: 100%;
+  border-collapse: collapse;
+}
+
+.explain-panel__caption {
+  text-align: left;
+  padding-bottom: 0.3rem;
+  color: var(--ink-muted);
+}
+
+.explain-panel th,
+.explain-panel td {
+  border: 1px solid var(--line);
+  padding: 0.2rem 0.4rem;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.candidates-panel__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 1候補 = 1カード。索引名を主役に、コストと推定行数を右に添える */
+.candidate {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
+  gap: 0.2rem 0.6rem;
+  padding: 0.4rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+}
+
+.candidate__index {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-wrap: anywhere;
+}
+
+.candidate__access-type {
+  grid-column: 1;
+  grid-row: 2;
+  color: var(--ink-muted);
+}
+
+.candidate__rows::before {
+  content: "推定 ";
+  color: var(--ink-muted);
+}
+
+.candidate__rows::after {
+  content: " 行";
+  color: var(--ink-muted);
+}
+
+.candidate__cost::before {
+  content: "コスト ";
+  color: var(--ink-muted);
+}
+
+.candidate__rows,
+.candidate__cost {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.candidate__covering-badge {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  justify-self: end;
+  padding: 0 0.35rem;
+  border: 1px solid var(--hit);
+  border-radius: 999px;
+  color: var(--hit);
+  font-size: 0.72rem;
+}
+
+.candidate__reason {
+  grid-column: 1 / -1;
+  color: var(--ink-muted);
+}
+
+.explain-panel pre {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.78rem;
+}
+
+.candidate[data-chosen="true"] {
+  border-color: var(--focus);
+  border-left-width: 3px;
+}
+
+.candidate[data-chosen="false"] {
   opacity: 0.75;
+}
+
+/* ---- 用語解説のツールチップ ---- */
+
+.term {
+  position: relative;
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  border-bottom: 1px dotted currentColor;
+  padding: 0;
+  cursor: help;
+  text-align: left;
+}
+
+.term-tooltip {
+  display: none;
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  width: 22rem;
+  max-width: 60vw;
+  padding: 0.6rem 0.7rem;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 18%);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  cursor: auto;
+}
+
+.term:hover .term-tooltip,
+.term:focus-visible .term-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.term-tooltip-mysql {
+  color: var(--ink-muted);
+}
+
+/* ---- プレイヤーバー ---- */
+
+.app-footer {
+  border-top: 1px solid var(--line);
+  padding: 0.6rem 1rem;
+}
+
+.player-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.player-button {
+  text-align: center;
+  min-width: 2.5rem;
+}
+
+.player-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.player-scrub {
+  flex: 1;
+  min-width: 8rem;
+}
+
+.player-position {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  min-width: 5.5rem;
+  text-align: right;
+}
+
+.player-speed {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.note {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--ink-muted);
 }

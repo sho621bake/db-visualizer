@@ -1,4 +1,6 @@
-import pkg from 'node-sql-parser';
+// 既定のエントリは全方言 (約3MB) を読み込む。DESIGN.md 2 のとおり MySQL 方言しか使わないので、
+// ブラウザに載せるぶんを削るため MySQL 専用ビルドを直接指す。
+import pkg from 'node-sql-parser/build/mysql.js';
 import type { Value } from '../catalog/catalog.js';
 import {
   type ColumnRef,
