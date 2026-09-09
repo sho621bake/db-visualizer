@@ -1,0 +1,34 @@
+{
+  "name": "s1-users-email-eq",
+  "engineSql": "SELECT * FROM users WHERE email = 'hina.watanabe100@example.com'",
+  "mysqlSql": "SELECT * FROM users WHERE email = 'hina.watanabe100@example.com'",
+  "explainJson": {
+    "query_block": {
+      "select_id": 1,
+      "cost_info": {
+        "query_cost": "1.00"
+      },
+      "table": {
+        "table_name": "users",
+        "access_type": "const",
+        "possible_keys": ["idx_users_email"],
+        "key": "idx_users_email",
+        "used_key_parts": ["email"],
+        "key_length": "766",
+        "ref": ["const"],
+        "rows_examined_per_scan": 1,
+        "rows_produced_per_join": 1,
+        "filtered": "100.00",
+        "cost_info": {
+          "read_cost": "0.00",
+          "eval_cost": "0.10",
+          "prefix_cost": "0.00",
+          "data_read_per_join": "1K"
+        },
+        "used_columns": ["id", "email", "name", "country", "created_at"]
+      }
+    }
+  },
+  "explainTree": "-> Rows fetched before execution  (cost=0..0 rows=1)",
+  "rowsTsv": "100\thina.watanabe100@example.com\tHina Watanabe\tJP\t2024-01-01 00:00:00"
+}

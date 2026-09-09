@@ -1,0 +1,35 @@
+{
+  "name": "s2-orders-user-range",
+  "engineSql": "SELECT user_id, status FROM orders WHERE user_id BETWEEN 10 AND 20",
+  "mysqlSql": "SELECT user_id, status FROM orders WHERE user_id BETWEEN 10 AND 20",
+  "explainJson": {
+    "query_block": {
+      "select_id": 1,
+      "cost_info": {
+        "query_cost": "18.26"
+      },
+      "table": {
+        "table_name": "orders",
+        "access_type": "range",
+        "possible_keys": ["idx_orders_user", "idx_orders_user_status"],
+        "key": "idx_orders_user_status",
+        "used_key_parts": ["user_id"],
+        "key_length": "4",
+        "rows_examined_per_scan": 89,
+        "rows_produced_per_join": 89,
+        "filtered": "100.00",
+        "using_index": true,
+        "cost_info": {
+          "read_cost": "9.36",
+          "eval_cost": "8.90",
+          "prefix_cost": "18.26",
+          "data_read_per_join": "7K"
+        },
+        "used_columns": ["user_id", "status"],
+        "attached_condition": "(`innodb_viz`.`orders`.`user_id` between 10 and 20)"
+      }
+    }
+  },
+  "explainTree": "-> Filter: (orders.user_id between 10 and 20)  (cost=18.3 rows=89)\n    -> Covering index range scan on orders using idx_orders_user_status over (10 <= user_id <= 20)  (cost=18.3 rows=89)",
+  "rowsTsv": "10\tcancelled\n10\tpaid\n10\tpending\n10\tpending\n10\tpending\n10\tshipped\n11\tcancelled\n11\tcancelled\n11\tpaid\n11\tpending\n11\tshipped\n11\tshipped\n11\tshipped\n11\tshipped\n12\tcancelled\n12\tpaid\n12\tpaid\n12\tpaid\n12\tpaid\n12\tpaid\n12\tpaid\n12\tpending\n12\tshipped\n12\tshipped\n12\tshipped\n12\tshipped\n13\tcancelled\n13\tcancelled\n13\tcancelled\n13\tpaid\n13\tpaid\n13\tpaid\n13\tpending\n13\tpending\n13\tpending\n13\tpending\n13\tshipped\n14\tcancelled\n14\tpending\n14\tpending\n14\tpending\n14\tshipped\n14\tshipped\n14\tshipped\n15\tcancelled\n15\tcancelled\n15\tcancelled\n15\tcancelled\n15\tcancelled\n16\tcancelled\n16\tcancelled\n16\tcancelled\n16\tpending\n16\tpending\n16\tpending\n16\tpending\n17\tcancelled\n17\tpaid\n17\tpending\n17\tpending\n17\tpending\n17\tpending\n17\tshipped\n17\tshipped\n17\tshipped\n18\tcancelled\n18\tcancelled\n18\tpaid\n18\tpaid\n18\tpaid\n18\tpending\n18\tpending\n18\tshipped\n18\tshipped\n18\tshipped\n18\tshipped\n19\tcancelled\n19\tpaid\n19\tpaid\n19\tpending\n19\tshipped\n19\tshipped\n20\tcancelled\n20\tcancelled\n20\tpaid\n20\tpaid\n20\tpending\n20\tpending\n20\tshipped"
+}

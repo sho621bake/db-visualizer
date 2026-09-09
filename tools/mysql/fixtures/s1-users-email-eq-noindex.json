@@ -1,0 +1,30 @@
+{
+  "name": "s1-users-email-eq-noindex",
+  "engineSql": "SELECT * FROM users WHERE email = 'hina.watanabe100@example.com'",
+  "mysqlSql": "SELECT * FROM users IGNORE INDEX (idx_users_email) WHERE email = 'hina.watanabe100@example.com'",
+  "explainJson": {
+    "query_block": {
+      "select_id": 1,
+      "cost_info": {
+        "query_cost": "20.25"
+      },
+      "table": {
+        "table_name": "users",
+        "access_type": "ALL",
+        "rows_examined_per_scan": 200,
+        "rows_produced_per_join": 0,
+        "filtered": "0.50",
+        "cost_info": {
+          "read_cost": "20.15",
+          "eval_cost": "0.10",
+          "prefix_cost": "20.25",
+          "data_read_per_join": "1K"
+        },
+        "used_columns": ["id", "email", "name", "country", "created_at"],
+        "attached_condition": "(`innodb_viz`.`users`.`email` = 'hina.watanabe100@example.com')"
+      }
+    }
+  },
+  "explainTree": "-> Filter: (users.email = 'hina.watanabe100@example.com')  (cost=20.2 rows=1)\n    -> Table scan on users  (cost=20.2 rows=200)",
+  "rowsTsv": "100\thina.watanabe100@example.com\tHina Watanabe\tJP\t2024-01-01 00:00:00"
+}

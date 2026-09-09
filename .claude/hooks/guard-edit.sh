@@ -32,8 +32,10 @@ esac
 
 case "$rel" in
   packages/engine/*)
-    if printf '%s' "$content" | grep -Eq "from '(react|react-dom|three)'|from \"(react|react-dom|three)\"|@react-three/|apps/web"; then
-      block "不変条件2 違反: packages/engine は apps/web / three / react に依存できません (DESIGN.md §3)。"
+    # import / from の「指定子」だけを取り出して検査する (コメント中の言及は誤検知になるため)
+    specs=$(printf '%s' "$content" | grep -oE "(from|import)[[:space:]]*\\(?[[:space:]]*['\"][^'\"]+['\"]" || true)
+    if printf '%s' "$specs" | grep -qE "['\"](react|react-dom|three)['\"]|['\"]@react-three/|apps/web"; then
+      block "不変条件2 違反: packages/engine は apps/web / three / react を import できません (DESIGN.md §3)。"
     fi
     ;;
 esac
