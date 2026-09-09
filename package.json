@@ -1,0 +1,30 @@
+{
+  "name": "db-visualizer",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check": "biome check . && tsc --noEmit && pnpm -r exec tsc --noEmit && vitest run",
+    "check:fast": "biome check . && tsc --noEmit && pnpm -r exec tsc --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "dev": "pnpm --filter @db-visualizer/web dev",
+    "build": "pnpm -r build",
+    "mysql:up": "docker compose -f tools/mysql/docker-compose.yml up -d --wait",
+    "mysql:down": "docker compose -f tools/mysql/docker-compose.yml down -v",
+    "seed:gen": "node tools/mysql/generate-seed.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.12",
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.5.0",
+    "jsdom": "30.0.1",
+    "typescript": "7.0.2",
+    "vite": "8.2.2",
+    "vitest": "4.1.11"
+  }
+}

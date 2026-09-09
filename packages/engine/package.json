@@ -1,0 +1,16 @@
+{
+  "name": "@db-visualizer/engine",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "node-sql-parser": "5.4.0",
+    "zod": "4.5.4"
+  }
+}

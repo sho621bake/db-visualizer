@@ -1,0 +1,15 @@
+{
+  "name": "@db-visualizer/tools-mysql",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@db-visualizer/engine": "workspace:*"
+  },
+  "devDependencies": {
+    "mysql2": "3.24.4"
+  }
+}
